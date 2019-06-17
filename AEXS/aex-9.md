@@ -24,7 +24,7 @@ The following standard allows for the implementation of a standard API for token
 
 This standard will allow decentralized applications and wallets to handle tokens across multiple interfaces.
 
-The most important here are `transfer`, `balance_of` and the `Transfer` event.
+The most important functions here are `balance` and `transfer` and the `Transfer` event.
 
 A standard interface allows any tokens to be re-used by other applications: from wallets to decentralized exchanges.
 
@@ -38,96 +38,92 @@ A standard interface allows any tokens to be re-used by other applications: from
 
 NOTES:
 
-`name` - Returns the name of the token - e.g. "MyToken".
+#### Meta info
 
-OPTIONAL - This method can be used to improve usability, but interfaces and other contracts MUST NOT expect these values to be present.
+```public function meta_info() : meta_info```
 
-```
-public function name() : string
-```
-
-`symbol` - Returns the symbol of the token. E.g. “HCK”.
-
-OPTIONAL - This method can be used to improve usability, but interfaces and other contracts MUST NOT expect these values to be present.
+- Function returning the meta information of the token saved as a record with the following structure:
 
 ```
-public function symbol() : string
+record meta_info =
+    {
+    // The name of the token e.g. "MyToken"
+    name     : string
+
+    // The symbol of the token e.g. "TKN"
+    , symbol   : string 
+
+    // Number of decimals the token uses - e.g. 8 means to divide the token amount by 100000000 to get its user representation
+    , decimals : int }
 ```
 
-`decimals` - Returns the number of decimals the token uses - e.g. 8, means to divide the token amount by 100000000 to get its user representation.
+OPTIONAL - This method is optional and can be used for usability improvements. Interfaces such as wallets, exchanges and other software MUST NOT expect this function and values to be present. 
 
-OPTIONAL - This method can be used to improve usability, but interfaces and other contracts MUST NOT expect these values to be present.
+#### Total supply
 
-```
-public function decimals() : int
-```
+```public function total_supply() : int``` - Returns the total token supply.
 
-`total_supply` - Returns the total token supply.
+#### Balance
 
-```
-public function total_supply() : int
-```
+```public function balance(owner: adderess) : option(int)``` - Returns optional the account balance of another account with address `owner`.
 
-`balance_of` - Returns the account balance of another account with address `owner`.
+#### Transfer
 
 ```
-public function balance_of(owner: address) : int
+public stateful function transfer(to_account: address, value: int)
 ```
 
-`transfer` - Transfers `value` amount of tokens to `to` address, and MUST fire the Transfer event. The function SHOULD throw if the message caller’s account balance does not have enough tokens to spend.
+`transfer` - Transfers `value` amount of tokens to `to_account` address, and MUST fire the `Transfer` event. The function SHOULD abort if the spender `Call.caller`'s account balance does not have enough tokens to spend.
 
-Note Transfers of 0 values MUST be treated as normal transfers and fire the Transfer event.
+Note: Transfers of 0 values MUST be treated as normal transfers and fire the Transfer event.
 
-```
-public stateful function transfer(to: address, value: int)
-```
+#### Transfer allowance
 
-`transfer_from`
-Transfers `value` amount of tokens from address `from` to address `to`, and MUST fire the Transfer event.
+```public stateful function transfer_allowance(from_account: address, to_account: address, value: int)```
+Transfers `value` amount of tokens from address `from_account` to address `to_account`, and MUST fire the `Transfer` event.
 
 The `transfer_from` method is used for a withdraw workflow, allowing contracts to transfer tokens on your behalf. This can be used for example to allow a contract to transfer tokens on your behalf and/or to charge fees in sub-currencies. The function SHOULD throw unless the `from` account has deliberately authorized the sender of the message via some mechanism.
 
 Note Transfers of 0 values MUST be treated as normal transfers and fire the Transfer event.
 
-```
-public stateful function transfer_from(from: address, to: address, value: int)
-```
+#### Create allowance
 
-`approve`
-Allows `spender` to withdraw from your account multiple times, up to the `value` amount. If this function is called again it overwrites the current allowance with `value`.
+```public stateful function create_allowance(for_account: address, value: int)```
+Allows `for_account` address to withdraw from your account (`Call.caller`) multiple times, up to the `value` amount. If this function is called again it overwrites the current allowance with `value`.
 
 NOTE: To prevent attack vectors (like the ones possible in ERC20) clients SHOULD make sure to create user interfaces in such a way that they set the allowance first to 0 before setting it to another value for the same spender. THOUGH The contract itself shouldn’t enforce it, to allow backwards compatibility with contracts deployed before
 
-```
-public stateful function approve(spender: address, value: int)
-```
+#### Change allowance
 
-`allowance`
-Returns the amount which `spender` is still allowed to withdraw from `owner`.
+```public stateful function change_allowance(for_account: address, value: int)```
+Increases the amount which `for_account` is still allowed to withdraw from `Call.caller`.
 
-```
-public function allowance(owner: address, spender: address) : int
-```
+Note: Passing of negative value can be used for decreasing the allowance.
+
 
 ### Events
 
-**Transfer** - MUST trigger when tokens are transferred, including zero value transfers.
-
-The transfer event arguments should be as follows: `(spender, receiver, value)`
+#### Transfer
 
 
 ```
 Transfer(indexed address, indexed address, indexed int)
 ```
+The transfer event arguments should be as follows: `(spender, receiver, value)`
 
-**Approval** - MUST trigger on any successful call to `approve(spender : address, value : int)`.
+The event MUST be triggered when tokens are transferred, including zero value transfers.
+
+
+#### Approval
+
+```
+Allowance(indexed address, indexed address, indexed int)
+```
 
 The approval event arguments should be as follows: `(spender, receiver, value)`
 
+The event MUST be triggered on any successful contract call to `create_allowance`.
 
-```
-Approval(indexed address, indexed address, indexed int)
-```
 
 ### Implementation
 There are several implementations available at the moment, but they lack a thing or two (that is why this standart is being proposed).
