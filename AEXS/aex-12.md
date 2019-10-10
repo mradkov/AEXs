@@ -1,4 +1,4 @@
-# AEX <to_be_assigned>
+# AEX #: On-chain Referral
 
 ```
 AEX: <to_be_assigned>
