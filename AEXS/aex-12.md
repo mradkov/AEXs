@@ -1,11 +1,11 @@
-# AEX 12
+# AEX <to_be_assigned>
 
 ```
-AEX: 12
+AEX: <to_be_assigned>
 Title: On-Chain Referral
 Author: Milen Radkov (@mradkov)
 License: BSD-3-Clause
-Discussions-To: 
+Discussions-To: <URL>
 Status: Draft
 Type: Standards Track
 Created: 2019-10-10
